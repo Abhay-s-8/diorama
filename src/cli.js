@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/* img2scene command line interface. Exit codes: 0 ok, 1 unexpected, 2 bad input, 3 Ollama problem. */
+/* diorama command line interface. Exit codes: 0 ok, 1 unexpected, 2 bad input, 3 Ollama problem. */
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -13,9 +13,9 @@ const IMAGE_TYPES = ['.png', '.jpg', '.jpeg', '.webp', '.gif'];
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const DEFAULT_THREE = fileURLToPath(new URL('../node_modules/three/build/three.module.min.js', import.meta.url));
 
-const USAGE = `Usage: img2scene <image> [options]
-       img2scene --demo [options]
-       img2scene --scene scene.json [options]
+const USAGE = `Usage: diorama <image> [options]
+       diorama --demo [options]
+       diorama --scene scene.json [options]
 
 Options:
   --model NAME   Ollama vision model (default ${DEFAULT_MODEL})
@@ -58,7 +58,7 @@ export async function main(argv, { out = process.stdout, err = process.stderr, d
     parsed = parseArgs(argv);
   } catch (e) {
     if (!(e instanceof UsageError)) throw e;
-    err.write(`img2scene: ${e.message}\n${USAGE}\n`);
+    err.write(`diorama: ${e.message}\n${USAGE}\n`);
     return 2;
   }
   const { opts, image } = parsed;
@@ -76,7 +76,7 @@ export async function main(argv, { out = process.stdout, err = process.stderr, d
         raw = JSON.parse(fs.readFileSync(opts.scene, 'utf8'));
       } catch (e) {
         const why = e instanceof SyntaxError ? `it is not valid JSON (${e.message})` : 'it could not be read';
-        err.write(`img2scene: cannot use scene file ${opts.scene}: ${why}\n`);
+        err.write(`diorama: cannot use scene file ${opts.scene}: ${why}\n`);
         return 2;
       }
       const checked = validateScene(raw);
@@ -88,18 +88,18 @@ export async function main(argv, { out = process.stdout, err = process.stderr, d
     } else {
       const ext = path.extname(image).toLowerCase();
       if (!IMAGE_TYPES.includes(ext)) {
-        err.write(`img2scene: unsupported file type "${ext || image}". Use png, jpg, jpeg, webp or gif.\n`);
+        err.write(`diorama: unsupported file type "${ext || image}". Use png, jpg, jpeg, webp or gif.\n`);
         return 2;
       }
       let size;
       try {
         size = fs.statSync(image).size;
       } catch {
-        err.write(`img2scene: cannot read image ${image}\n`);
+        err.write(`diorama: cannot read image ${image}\n`);
         return 2;
       }
       if (size > MAX_IMAGE_BYTES) {
-        err.write('img2scene: the image is larger than 10 MB. Use a smaller one.\n');
+        err.write('diorama: the image is larger than 10 MB. Use a smaller one.\n');
         return 2;
       }
       name = path.basename(image, path.extname(image));
@@ -120,7 +120,7 @@ export async function main(argv, { out = process.stdout, err = process.stderr, d
       writeSite(scene, outDir, { threeSrc: opts.three });
     } catch (e) {
       if (/npm install/.test(e.message)) {
-        err.write(`img2scene: ${e.message}\n`);
+        err.write(`diorama: ${e.message}\n`);
         return 2;
       }
       throw e;
@@ -130,10 +130,10 @@ export async function main(argv, { out = process.stdout, err = process.stderr, d
     return 0;
   } catch (e) {
     if (e instanceof OllamaError) {
-      err.write(`img2scene: ${e.message}\n`);
+      err.write(`diorama: ${e.message}\n`);
       return 3;
     }
-    err.write(`img2scene: ${e.message}\n`);
+    err.write(`diorama: ${e.message}\n`);
     return 1;
   }
 }
