@@ -68,11 +68,12 @@ image -> ollama.js (vision model, JSON schema) -> repair.js -> schema.js (valida
 - `src/schema.js` is the only gate between model output and the page: it limits shapes, clamps numbers,
   checks colours and caps text lengths.
 - `src/generate.js` writes `index.html`, `style.css`, `main.js`, `runtime.js` and a copy of three.js.
-  The page is a small landing page in a retro pixel style: a floating top bar, a hero with the title on a
-  plate and two buttons, the 3D canvas beside it (above it on phones), then one card per section. The
-  layout is inspired by a Dribbble landing page shot (3D Modeling for UI Design, by Mako Tsereteli) but
-  none of its art, branding or text is used. The theme is plain CSS built from the scene's validated
-  palette, with no fonts, images or network requests, so it keeps the strict CSP and works offline.
+  The page is a small landing page: a floating glass top bar, a hero with the title in an outlined box and two
+  buttons, the 3D canvas beside it (above it on phones), then one card per section. The look is a soft
+  gradient built from the scene's palette with rounded glass cards, inspired by a Dribbble landing page shot
+  (3D Modeling for UI Design, by Mako Tsereteli); none of its art, branding or text is used. Text colours are
+  worked out from the background (`src/color.js`), so a model palette with poor contrast cannot make the page
+  unreadable. It is plain CSS with no fonts, images or network requests, so it keeps the strict CSP and works offline.
 
 ## Safety
 
@@ -107,7 +108,7 @@ Be honest about what is and is not checked.
 
 - [three.js](https://github.com/mrdoob/three.js), MIT licence.
 - [Ollama](https://github.com/ollama/ollama) and the vision model you choose (check that model's licence).
-- The pixel/retro styling is inspired by the look of [pixel-retroui](https://github.com/Dksie09/RetroUI) but written from scratch in plain CSS. pixel-retroui is a React library and is not used or bundled here.
+- The page layout is inspired by a Dribbble shot (see above) but written from scratch in plain CSS; no assets from it are used.
 - No code was copied from other projects.
 - AI assistance (Claude) was used while writing this project.
 
