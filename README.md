@@ -50,7 +50,7 @@ Exit codes: `0` ok, `1` unexpected error, `2` bad input, `3` Ollama problem
 
 ```
 image -> ollama.js (vision model, JSON schema) -> repair.js -> schema.js (validate) -> generate.js -> out/<name>/
-                                                               ^ default scene if the model's JSON is unusable
+                                                                ^ default scene if the model's JSON is unusable
 ```
 
 - `src/ollama.js` sends the image (base64) and a JSON schema to Ollama's `/api/chat`.
@@ -59,6 +59,9 @@ image -> ollama.js (vision model, JSON schema) -> repair.js -> schema.js (valida
 - `src/schema.js` is the only gate between model output and the page: it limits shapes, clamps numbers,
   checks colours and caps text lengths.
 - `src/generate.js` writes `index.html`, `style.css`, `main.js`, `runtime.js` and a copy of three.js.
+  The page uses a retro pixel look: a window with a title bar, a mood badge and one card per section
+  beside the 3D canvas (below it on phones). The theme is plain CSS built from the scene's validated
+  palette, with no fonts, images or network requests, so it keeps the strict CSP and works offline.
 
 ## Safety
 
@@ -94,6 +97,7 @@ Be honest about what is and is not checked.
 
 - [three.js](https://github.com/mrdoob/three.js), MIT licence.
 - [Ollama](https://github.com/ollama/ollama) and the vision model you choose (check that model's licence).
+- The pixel/retro styling is inspired by the look of [pixel-retroui](https://github.com/Dksie09/RetroUI) but written from scratch in plain CSS. pixel-retroui is a React library and is not used or bundled here.
 - No code was copied from other projects.
 - AI assistance (Claude) was used while writing this project.
 
