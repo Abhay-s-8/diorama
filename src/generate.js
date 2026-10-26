@@ -107,6 +107,9 @@ export function renderCss(input) {
   --shadow: ${shadow};
   --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
 }
+* { box-sizing: border-box; }
+html { background: var(--bg); scroll-padding-top: 6rem; }
+body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
 @supports (color: color-mix(in srgb, red 50%, blue)) {
   :root {
     --muted: color-mix(in srgb, var(--ink) 78%, var(--bg));
@@ -116,9 +119,6 @@ export function renderCss(input) {
     background: linear-gradient(145deg, color-mix(in srgb, var(--primary) 28%, var(--bg)) 0%, var(--bg) 45%, color-mix(in srgb, var(--accent) 42%, var(--bg)) 100%);
   }
 }
-* { box-sizing: border-box; }
-html { background: var(--bg); scroll-padding-top: 6rem; }
-body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
 .nav { position: fixed; top: .9rem; left: .9rem; right: .9rem; z-index: 5; max-width: 72rem; margin-inline: auto; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .5rem .6rem .5rem 1.1rem; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; box-shadow: var(--shadow); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
 .brand { display: flex; align-items: center; gap: .6rem; font-weight: 700; letter-spacing: -.01em; color: var(--ink); text-decoration: none; }
 .logo { width: 22px; height: 22px; border-radius: 7px; background: linear-gradient(135deg, var(--primary), var(--accent)); }
