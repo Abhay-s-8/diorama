@@ -14,9 +14,19 @@ export function createStage(THREE, data, width, height) {
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(data.palette.background);
 
-  const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 100);
-  camera.position.set(0, 1.5, 10);
-  camera.lookAt(0, 0, 0);
+  const FOV = 50;
+  const camera = new THREE.PerspectiveCamera(FOV, width / height, 0.1, 100);
+
+  // The group turns around the y axis, so what must stay in view is the largest
+  // distance from that axis. Pull the camera back until that fits the canvas width.
+  const reach = Math.max(0, ...data.objects.map((o) => Math.hypot(o.position[0], o.position[2]) + o.size / 2));
+  const tanHalf = Math.tan((FOV / 2) * Math.PI / 180);
+  function placeCamera() {
+    const fitWidth = (reach * 1.15) / (tanHalf * camera.aspect) + reach;
+    camera.position.set(0, 1.5, Math.min(Math.max(10, fitWidth), 60));
+    camera.lookAt(0, 0, 0);
+  }
+  placeCamera();
 
   scene.add(new THREE.AmbientLight(0xffffff, 0.6));
   const key = new THREE.DirectionalLight(0xffffff, 1.2);
@@ -58,6 +68,7 @@ export function createStage(THREE, data, width, height) {
   function resize(w, h) {
     if (!h) return;
     camera.aspect = w / h;
+    placeCamera();
     camera.updateProjectionMatrix();
   }
 
