@@ -7,11 +7,13 @@ const canvas = document.getElementById('stage');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
-const stage = createStage(THREE, data, window.innerWidth, window.innerHeight);
+const stage = createStage(THREE, data, canvas.clientWidth || 800, canvas.clientHeight || 600);
 
 function fit() {
-  renderer.setSize(window.innerWidth, window.innerHeight, false);
-  stage.resize(window.innerWidth, window.innerHeight);
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
+  renderer.setSize(w, h, false);
+  stage.resize(w, h);
 }
 fit();
 window.addEventListener('resize', fit);
