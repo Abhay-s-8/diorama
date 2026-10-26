@@ -99,3 +99,12 @@ test('writeSite creates nested output folders', () => {
 test('a missing three.js file explains how to get it', () => {
   assert.throws(() => writeSite(scene(), tmp(), { threeSrc: '/no/such/three.js' }), /npm install/);
 });
+
+test('main.js sizes the renderer from the canvas box, not the whole window', () => {
+  const out = tmp();
+  writeSite(scene(), out, { threeSrc: fakeThree() });
+  const main = fs.readFileSync(path.join(out, 'main.js'), 'utf8');
+  assert.match(main, /canvas\.clientWidth/);
+  assert.match(main, /canvas\.clientHeight/);
+  assert.ok(!/window\.innerWidth/.test(main));
+});
