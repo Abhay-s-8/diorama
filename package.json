@@ -1,10 +1,10 @@
 {
-  "name": "img2scene",
+  "name": "diorama",
   "version": "0.1.0",
   "description": "Turn an image into a small 3D website using a local vision model (Ollama) and Three.js",
   "type": "module",
   "bin": {
-    "img2scene": "src/cli.js"
+    "diorama": "src/cli.js"
   },
   "scripts": {
     "test": "node --test",

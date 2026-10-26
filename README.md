@@ -1,4 +1,4 @@
-# img2scene
+# Diorama
 
 Turn an image into a small 3D website, using a **local** vision model.
 
@@ -10,7 +10,7 @@ Built for the Hacktoberfest 2026 Week 4 DEV Challenge. The repository was starte
 
 ## Live demo
 
-https://abhay-s-8.github.io/img2scene/
+https://abhay-s-8.github.io/diorama/
 
 This page is built by GitHub Actions from `examples/demo-scene.json` (a hand-written scene, not model
 output) every time `main` changes, after the tests pass. The CLI itself needs a local Ollama, so only this
