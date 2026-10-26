@@ -92,11 +92,10 @@ mean no test needs a real model, GPU or network.
 Be honest about what is and is not checked.
 
 - Checked: validation, repair, the Ollama request/response handling, the generator output and the CLI
-  (unit tests); the generated page loads and runs its render loop in headless Chromium against a
-  **stub** of three.js, with no console errors and hostile titles staying inert.
-- **Not yet checked: rendering with the real three.js and output from a real vision model.** Those need
-  running on a machine with Ollama and `npm install` (see `docs/PLAN.md`, Days 3 and 4). Light intensities
-  and camera distance may need a visual tweak.
+  (unit tests). The live demo page renders with the real three.js in a real browser, with no console
+  errors, and hostile titles stay inert (tested with a stub of three.js).
+- **Not yet checked: output from a real vision model.** That needs a machine with Ollama (see
+  `docs/PLAN.md`, Days 3 and 4). The 3D layout is only tuned on the hand-written demo scene so far.
 - The result is a **stylised scene from basic shapes**, not an accurate 3D model of what is in the photo.
   Real image-to-3D models need a GPU and are out of scope here.
 - Small vision models sometimes return poor JSON or odd shapes. The repair/retry/fallback layer reduces
