@@ -27,10 +27,10 @@ test('builds one mesh per object with the right geometry and colour', () => {
   assert.equal(s.meshes[1].geometry.args[0], 0.5);
 });
 
-test('positions come from the scene and the background from the palette', () => {
+test('positions come from the scene, and the scene has no backdrop so the page shows through', () => {
   const s = createStage(THREE, data(), 800, 600);
   assert.deepEqual([s.meshes[0].position.x, s.meshes[0].position.y, s.meshes[0].position.z], [1, 2, 3]);
-  assert.equal(s.scene.background.value, '#101820');
+  assert.equal(s.scene.background, null);
 });
 
 test('the camera uses the viewport aspect ratio and can resize', () => {

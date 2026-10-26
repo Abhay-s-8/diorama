@@ -108,3 +108,11 @@ test('main.js sizes the renderer from the canvas box, not the whole window', () 
   assert.match(main, /canvas\.clientHeight/);
   assert.ok(!/window\.innerWidth/.test(main));
 });
+
+test('main.js makes a transparent canvas so the page gradient shows behind the shapes', () => {
+  const out = tmp();
+  writeSite(scene(), out, { threeSrc: fakeThree() });
+  const main = fs.readFileSync(path.join(out, 'main.js'), 'utf8');
+  assert.match(main, /new THREE\.WebGLRenderer\(\{[^}]*alpha:\s*true/);
+  assert.match(main, /setClearColor\([^)]*,\s*0\)/);
+});
