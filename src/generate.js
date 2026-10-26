@@ -36,8 +36,8 @@ const CSP = [
 
 export function renderIndexHtml(input) {
   const { scene } = validateScene(input);
-  const sections = scene.sections
-    .map((s) => `      <section>\n        <h2>${escapeHtml(s.heading)}</h2>\n        <p>${escapeHtml(s.text)}</p>\n      </section>`)
+  const cards = scene.sections
+    .map((s) => `        <section class="card">\n          <h2>${escapeHtml(s.heading)}</h2>\n          <p>${escapeHtml(s.text)}</p>\n        </section>`)
     .join('\n');
   return `<!doctype html>
 <html lang="en">
@@ -51,11 +51,14 @@ export function renderIndexHtml(input) {
 <body data-mood="${escapeHtml(scene.mood)}">
   <canvas id="stage" aria-hidden="true"></canvas>
   <main class="content">
-    <header>
-      <h1>${escapeHtml(scene.title)}</h1>
-      <p class="mood">${escapeHtml(scene.mood)}</p>
-    </header>
-${sections}
+    <article class="window">
+      <div class="titlebar"><span class="dots" aria-hidden="true"></span>${escapeHtml(scene.title)}</div>
+      <div class="body">
+        <p class="badge">${escapeHtml(scene.mood)}</p>
+        <h1>${escapeHtml(scene.title)}</h1>
+${cards}
+      </div>
+    </article>
   </main>
   <script type="application/json" id="scene-data">${safeJson(scene)}</script>
   <script type="module" src="main.js"></script>
@@ -72,15 +75,39 @@ export function renderCss(input) {
   --accent: ${palette.accent};
 }
 * { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; background: var(--bg); color: var(--accent); font-family: system-ui, sans-serif; }
-#stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
-.content { position: relative; z-index: 1; max-width: 42rem; padding: 2rem 1.5rem; pointer-events: none; }
-h1 { margin: 0 0 .25rem; font-size: clamp(1.8rem, 5vw, 3rem); color: var(--primary); }
-.mood { margin: 0 0 2rem; text-transform: uppercase; letter-spacing: .15em; font-size: .8rem; opacity: .7; }
-section { margin-bottom: 1.5rem; }
-h2 { margin: 0 0 .25rem; font-size: 1.2rem; color: var(--primary); }
-p { margin: 0; line-height: 1.5; }
-@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--accent); font-family: "Courier New", ui-monospace, monospace; image-rendering: pixelated; }
+#stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; image-rendering: pixelated; }
+.content { position: relative; z-index: 1; min-height: 100%; padding: 2rem 1.5rem; display: flex; align-items: flex-start; pointer-events: none; }
+.window {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 26rem;
+  background: var(--bg);
+  color: var(--accent);
+  box-shadow:
+    0 -4px 0 0 var(--accent),
+    0 4px 0 0 var(--accent),
+    -4px 0 0 0 var(--accent),
+    4px 0 0 0 var(--accent),
+    8px 8px 0 0 var(--primary);
+}
+.titlebar { display: flex; align-items: center; gap: .75rem; padding: .5rem .75rem; background: var(--accent); color: var(--bg); font-weight: bold; letter-spacing: .08em; text-transform: uppercase; font-size: .8rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.dots { width: 8px; height: 8px; background: var(--bg); box-shadow: 14px 0 0 0 var(--bg), 28px 0 0 0 var(--bg); margin-right: 28px; flex: none; }
+.body { padding: 1.25rem; }
+.badge { display: inline-block; margin: 0 0 1rem; padding: .15rem .5rem; background: var(--primary); color: var(--bg); text-transform: uppercase; letter-spacing: .15em; font-size: .7rem; font-weight: bold; box-shadow: 4px 4px 0 0 var(--accent); }
+h1 { margin: 0 0 1.25rem; font-size: clamp(1.4rem, 4vw, 2rem); line-height: 1.15; color: var(--primary); text-transform: uppercase; letter-spacing: .04em; }
+.card { margin-bottom: 1rem; padding: .75rem .9rem; box-shadow: 0 0 0 4px var(--accent), 8px 8px 0 4px var(--primary); }
+.card:last-child { margin-bottom: 0; }
+h2 { margin: 0 0 .35rem; font-size: 1rem; color: var(--primary); text-transform: uppercase; letter-spacing: .06em; }
+p { margin: 0; line-height: 1.5; font-size: .9rem; }
+@media (min-width: 900px) {
+  #stage { left: 30rem; width: calc(100% - 30rem); }
+}
+@media (max-width: 640px) {
+  .content { padding: 1rem; align-items: flex-end; }
+  .window { max-width: none; }
+}
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 `;
 }
 
