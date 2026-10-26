@@ -1,13 +1,13 @@
 {
-  "title": "Desk lamp",
-  "mood": "playful",
+  "title": "Shape garden",
+  "mood": "calm",
   "palette": { "background": "#1b1535", "primary": "#ff7ac6", "accent": "#9ff3ff" },
   "objects": [
-    { "shape": "cylinder", "color": "#ff7ac6", "position": [0, -2.2, 0], "size": 1.6, "animation": "none" },
-    { "shape": "cone", "color": "#9ff3ff", "position": [0, 0.2, 0], "size": 1.8, "animation": "float" },
-    { "shape": "sphere", "color": "#ffe66d", "position": [0, -1.0, 0], "size": 0.8, "animation": "pulse" },
-    { "shape": "torus", "color": "#9ff3ff", "position": [2.6, 1.4, -1], "size": 1.2, "animation": "spin" },
-    { "shape": "box", "color": "#ff7ac6", "position": [-2.6, 1.0, -1], "size": 0.9, "animation": "spin" }
+    { "shape": "sphere", "color": "#ff7ac6", "position": [0, 0, 0], "size": 1.8, "animation": "pulse" },
+    { "shape": "torus", "color": "#9ff3ff", "position": [0, 0, 0], "size": 3, "animation": "spin" },
+    { "shape": "box", "color": "#ffe66d", "position": [-3, 1.6, -1], "size": 0.9, "animation": "spin" },
+    { "shape": "cone", "color": "#9ff3ff", "position": [3, -1.4, 0.5], "size": 1.2, "animation": "float" },
+    { "shape": "cylinder", "color": "#ff7ac6", "position": [-2.6, -1.9, 1], "size": 0.8, "animation": "float" }
   ],
   "sections": [
     { "heading": "Hand-written demo", "text": "This page was built from examples/demo-scene.json, not from a model." },
