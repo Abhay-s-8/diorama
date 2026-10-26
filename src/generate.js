@@ -36,10 +36,21 @@ const CSP = [
 
 export function renderIndexHtml(input) {
   const { scene } = validateScene(input);
-  const count = scene.sections.length;
-  const cards = scene.sections
-    .map((s) => `        <section class="card">\n          <h2>${escapeHtml(s.heading)}</h2>\n          <p>${escapeHtml(s.text)}</p>\n        </section>`)
+  const sections = scene.sections;
+  const article = /^[aeiou]/i.test(scene.mood) ? 'An' : 'A';
+  const links = sections
+    .slice(0, 3)
+    .map((s, i) => `<a href="#s${i + 1}">${escapeHtml(s.heading)}</a>`)
+    .join('');
+  const cards = sections
+    .map((s, i) => `        <section class="card" id="s${i + 1}">\n          <h2>${escapeHtml(s.heading)}</h2>\n          <p>${escapeHtml(s.text)}</p>\n        </section>`)
     .join('\n');
+  const details = sections.length
+    ? `    <section class="details" id="details" aria-label="Details">\n      <div class="cards">\n${cards}\n      </div>\n    </section>\n`
+    : '';
+  const primary = sections.length
+    ? '<a class="btn primary" href="#details">See details</a><a class="btn" href="#about">About this page</a>'
+    : '<a class="btn primary" href="#about">About this page</a>';
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -51,17 +62,22 @@ export function renderIndexHtml(input) {
 </head>
 <body data-mood="${escapeHtml(scene.mood)}">
   <canvas id="stage" aria-hidden="true"></canvas>
-  <main class="content">
-    <article class="window">
-      <div class="titlebar"><span class="dots" aria-hidden="true"></span>${escapeHtml(scene.title)}</div>
-      <div class="body">
-        <p class="badge">${escapeHtml(scene.mood)}</p>
-        <h1>${escapeHtml(scene.title)}</h1>
-${cards}
+  <header class="nav" id="top">
+    <a class="brand" href="#top"><span class="logo" aria-hidden="true"></span>Diorama</a>
+    <nav aria-label="Page sections"><a href="#top" aria-current="page">Home</a>${links}</nav>
+    <span class="badge">${escapeHtml(scene.mood)}</span>
+  </header>
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <h1><span class="lead">${article} ${escapeHtml(scene.mood)} scene for</span> <span class="plate">${escapeHtml(scene.title)}</span></h1>
+        <div class="actions">${primary}</div>
       </div>
-      <footer class="statusbar"><span>${count} ${count === 1 ? 'section' : 'sections'}</span><span>Made with Diorama</span></footer>
-    </article>
-  </main>
+    </section>
+${details}  </main>
+  <footer class="about" id="about">
+    <p>Made with Diorama. This page was built from a scene description that was checked before it was written, and it makes no network requests.</p>
+  </footer>
   <script type="application/json" id="scene-data">${safeJson(scene)}</script>
   <script type="module" src="main.js"></script>
 </body>
@@ -87,44 +103,44 @@ export function renderCss(input) {
   }
 }
 * { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; background: var(--bg); color: var(--accent); font-family: var(--mono); image-rendering: pixelated; }
-#stage { position: fixed; inset: 0; width: 100%; height: 100%; display: block; image-rendering: pixelated; }
-.content { position: relative; z-index: 1; min-height: 100%; padding: 2rem 1.5rem; display: flex; align-items: flex-start; pointer-events: none; }
-.window {
-  pointer-events: auto;
-  width: 100%;
-  max-width: 26rem;
-  background: var(--bg);
-  color: var(--accent);
-  box-shadow:
-    0 -3px 0 0 var(--accent),
-    0 3px 0 0 var(--accent),
-    -3px 0 0 0 var(--accent),
-    3px 0 0 0 var(--accent),
-    8px 8px 0 0 var(--primary);
-}
-.titlebar { display: flex; align-items: center; gap: .75rem; padding: .55rem .9rem; background: var(--accent); color: var(--bg); font-weight: bold; letter-spacing: .06em; font-size: .8rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-.dots { width: 8px; height: 8px; background: var(--bg); box-shadow: 14px 0 0 0 var(--bg), 28px 0 0 0 var(--bg); margin-right: 28px; flex: none; }
-.body { padding: 1.5rem 1.4rem 1.6rem; font-family: var(--sans); }
-.badge { display: inline-block; margin: 0 0 .9rem; padding: .15rem .55rem; background: var(--primary); color: var(--bg); font-family: var(--mono); letter-spacing: .08em; font-size: .75rem; font-weight: bold; box-shadow: 3px 3px 0 0 var(--accent); }
-h1 { margin: 0 0 1.6rem; font-family: var(--mono); font-size: clamp(1.6rem, 4.5vw, 2.2rem); line-height: 1.1; letter-spacing: -.01em; color: var(--primary); }
-.card { margin-bottom: 1.4rem; padding: .9rem 1rem 1rem; background: var(--panel); box-shadow: 0 0 0 2px var(--accent), 6px 6px 0 2px var(--primary); }
-.card:last-child { margin-bottom: 0; }
-h2 { margin: 0 0 .4rem; display: flex; align-items: center; gap: .55rem; font-family: var(--mono); font-size: 1rem; line-height: 1.25; color: var(--primary); }
+html { background: var(--bg); scroll-padding-top: 6rem; }
+body { margin: 0; background: var(--bg); color: var(--accent); font-family: var(--sans); image-rendering: pixelated; }
+#stage { position: fixed; top: 5.5rem; left: 0; width: 100%; height: 36vh; display: block; image-rendering: pixelated; }
+.nav { position: fixed; top: .75rem; left: .75rem; right: .75rem; z-index: 5; max-width: 76rem; margin-inline: auto; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .55rem .8rem; background: var(--panel); box-shadow: 0 0 0 2px var(--accent), 5px 5px 0 2px var(--primary); }
+.brand { display: flex; align-items: center; font-family: var(--mono); font-weight: bold; color: var(--accent); text-decoration: none; }
+.logo { display: inline-block; width: 14px; height: 14px; margin-right: .6rem; background: var(--primary); box-shadow: 3px 3px 0 0 var(--accent); }
+.nav nav { display: flex; gap: .25rem; min-width: 0; }
+.nav nav a { display: inline-block; max-width: 9rem; padding: .3rem .65rem; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: .85rem; color: var(--accent); text-decoration: none; }
+.nav nav a:hover, .nav nav a[aria-current] { background: var(--primary); color: var(--bg); }
+.badge { flex: none; padding: .15rem .55rem; background: var(--primary); color: var(--bg); font-family: var(--mono); font-size: .75rem; font-weight: bold; letter-spacing: .04em; box-shadow: 3px 3px 0 0 var(--accent); }
+.hero { position: relative; z-index: 1; padding: 3rem 1.5rem; padding-top: calc(5.5rem + 36vh + 1.5rem); }
+.hero-copy { max-width: 34rem; }
+h1 { margin: 0; font-family: var(--mono); line-height: 1.1; }
+.lead { display: block; margin-bottom: .9rem; font-size: clamp(1.3rem, 3.4vw, 1.9rem); color: var(--accent); }
+.plate { display: inline-block; max-width: 100%; padding: .1em .4em; font-size: clamp(2rem, 7vw, 3.6rem); color: var(--primary); background: var(--panel); box-shadow: 0 0 0 3px var(--accent), 7px 7px 0 3px var(--primary); overflow-wrap: anywhere; }
+.actions { display: flex; flex-wrap: wrap; gap: 1.1rem; margin-top: 2.2rem; }
+.btn { display: inline-block; padding: .75rem 1.2rem; font-family: var(--mono); font-size: .9rem; font-weight: bold; color: var(--accent); background: transparent; text-decoration: none; box-shadow: 0 0 0 2px var(--accent), 4px 4px 0 2px var(--accent); transition: transform .1s; }
+.btn.primary { background: var(--primary); color: var(--bg); }
+.btn:hover { transform: translate(2px, 2px); box-shadow: 0 0 0 2px var(--accent), 2px 2px 0 2px var(--accent); }
+.details { position: relative; z-index: 2; padding: 3.5rem 1.5rem 4rem; background: var(--bg); border-top: 3px solid var(--accent); }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); gap: 2rem; max-width: 72rem; margin: 0 auto; }
+.card { padding: .9rem 1rem 1rem; background: var(--panel); box-shadow: 0 0 0 2px var(--accent), 6px 6px 0 2px var(--primary); }
+h2 { margin: 0 0 .4rem; display: flex; align-items: center; gap: .55rem; font-family: var(--mono); font-size: 1.05rem; line-height: 1.25; color: var(--primary); }
 h2::before { content: ""; width: 8px; height: 8px; flex: none; background: var(--primary); box-shadow: 2px 2px 0 0 var(--accent); }
-p { margin: 0; max-width: 62ch; line-height: 1.6; font-size: .95rem; color: var(--muted); }
-.card p { color: var(--accent); }
-.statusbar { display: flex; justify-content: space-between; gap: 1rem; padding: .5rem .9rem; border-top: 2px solid var(--accent); font-family: var(--mono); font-size: .72rem; color: var(--muted); }
+p { margin: 0; max-width: 62ch; line-height: 1.6; font-size: .95rem; }
+.about { position: relative; z-index: 2; padding: 1.2rem 1.5rem; background: var(--bg); border-top: 2px solid var(--accent); }
+.about p { max-width: 72rem; margin: 0 auto; font-size: .8rem; color: var(--muted); }
 :focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
 @media (min-width: 900px) {
-  #stage { left: 30rem; width: calc(100% - 30rem); }
-  .window { min-height: calc(100vh - 4rem); display: flex; flex-direction: column; }
-  .body { flex: 1; }
+  #stage { top: 0; left: 38rem; width: calc(100% - 38rem); height: 100vh; }
+  .hero { min-height: 100vh; display: flex; align-items: center; padding-top: 6rem; padding-left: max(2rem, calc((100vw - 76rem) / 2 + .75rem)); }
 }
 @media (max-width: 640px) {
-  .content { padding: 1.25rem 1rem; padding-top: 46vh; align-items: flex-end; }
-  .window { max-width: none; }
+  .nav nav { display: none; }
+  .hero { padding-left: 1rem; padding-right: 1rem; }
+  .details { padding: 2.5rem 1rem 3rem; }
 }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 `;
 }
