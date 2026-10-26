@@ -3,12 +3,18 @@
   "version": "0.1.0",
   "description": "Turn an image into a small 3D website using a local vision model (Ollama) and Three.js",
   "type": "module",
-  "bin": { "img2scene": "src/cli.js" },
+  "bin": {
+    "img2scene": "src/cli.js"
+  },
   "scripts": {
     "test": "node --test",
-    "demo": "node src/cli.js --demo --out out/demo"
+    "demo": "node src/cli.js --scene examples/demo-scene.json --out out/demo"
   },
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "license": "MIT",
-  "dependencies": { "three": "^0.169.0" }
+  "dependencies": {
+    "three": "^0.169.0"
+  }
 }

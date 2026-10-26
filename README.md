@@ -8,6 +8,14 @@ one-page website with a rotating [Three.js](https://threejs.org) scene.
 
 Built for the Hacktoberfest 2026 Week 4 DEV Challenge. The repository was started on 2026-10-26.
 
+## Live demo
+
+https://abhay-s-8.github.io/img2scene/
+
+This page is built by GitHub Actions from `examples/demo-scene.json` (a hand-written scene, not model
+output) every time `main` changes, after the tests pass. The CLI itself needs a local Ollama, so only this
+demo is hosted.
+
 ## Why a local open-weight model
 
 - Your sketches and brand images never leave your machine.
@@ -23,7 +31,7 @@ ollama pull gemma3:4b      # a vision-capable model; use a smaller one if RAM is
 npm install                # installs three.js, the only dependency
 npm test                   # all tests run without a model or network
 
-npm run demo               # builds out/demo from a built-in scene (no model needed)
+npm run demo               # builds out/demo from examples/demo-scene.json (no model needed)
 node src/cli.js examples/my-sketch.png
 ```
 
@@ -41,6 +49,7 @@ Browsers block ES modules on `file://`, so double-clicking the file will not wor
 | `--out DIR` | Output folder (default `out/<image name>`) |
 | `--print-json` | Print the validated scene JSON and write nothing |
 | `--demo` | Use the built-in scene, no image and no model |
+| `--scene FILE` | Build a page from a scene JSON file, no image and no model |
 | `--three PATH` | Path to `three.module.min.js` (default: from `node_modules`) |
 
 Exit codes: `0` ok, `1` unexpected error, `2` bad input, `3` Ollama problem
