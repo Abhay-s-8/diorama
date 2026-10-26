@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { renderCss, renderIndexHtml } from '../src/generate.js';
+import { contrastRatio } from '../src/color.js';
 import { FALLBACK_SCENE } from '../src/schema.js';
 
 const scene = (over = {}) => ({
@@ -87,10 +88,19 @@ test('the about footer says what made the page and that it loads nothing from th
   assert.match(about, /no network requests/i);
 });
 
+test('the 3D canvas lives inside the hero, so it scrolls away with it', () => {
+  const html = renderIndexHtml(scene());
+  assert.match(html, /<section class="hero">\s*<canvas id="stage" aria-hidden="true"><\/canvas>/);
+  assert.equal([...html.matchAll(/<canvas /g)].length, 1);
+});
+
 /* ---------- css: palette, safety ---------- */
 
+const LIGHT = { background: '#dfe3fb', primary: '#7b6cf6', accent: '#a8e6f0' };
+const DARK = { background: '#101820', primary: '#f2aa4c', accent: '#e0e0e0' };
+
 test('the css uses only the validated palette colours', () => {
-  const css = renderCss(scene({ palette: { background: '#101820', primary: '#f2aa4c', accent: '#e0e0e0' } }));
+  const css = renderCss(scene({ palette: DARK }));
   assert.match(css, /--bg:\s*#101820/);
   assert.match(css, /--primary:\s*#f2aa4c/);
   assert.match(css, /--accent:\s*#e0e0e0/);
@@ -111,45 +121,84 @@ test('the css makes no network requests and loads no fonts', () => {
   assert.ok(!/https?:\/\//i.test(css));
 });
 
-/* ---------- css: the retro pixel look ---------- */
-
-test('the css has the pixel look: pixelated images, hard offset shadows, monospace', () => {
-  const css = renderCss(scene());
-  assert.match(css, /image-rendering:\s*pixelated/);
-  assert.match(css, /box-shadow:[^;]*\d+px \d+px 0/);
-  assert.match(css, /monospace/);
+test('text colours are worked out from the palette, so any palette stays readable', () => {
+  const light = renderCss(scene({ palette: LIGHT }));
+  assert.match(light, /--ink:\s*#0a0a23/);
+  const dark = renderCss(scene({ palette: DARK }));
+  assert.match(dark, /--ink:\s*#ffffff/);
+  assert.match(dark, /--on-primary:\s*#0a0a23/); // orange button gets dark text
+  assert.match(light, /--on-primary:\s*#0a0a23/);
+  const navy = renderCss(scene({ palette: { background: '#fafafa', primary: '#1a237e', accent: '#ffd54f' } }));
+  assert.match(navy, /--on-primary:\s*#ffffff/); // navy button gets white text
 });
 
-test('the top bar, the title plate and the cards have a hard offset shadow in the primary colour', () => {
-  const css = renderCss(scene());
-  assert.match(css, /\.nav\s*\{[^}]*\d+px \d+px 0 \d+px var\(--primary\)/);
-  assert.match(css, /\.plate\s*\{[^}]*\d+px \d+px 0 \d+px var\(--primary\)/);
-  assert.match(css, /\.card\s*\{[^}]*\d+px \d+px 0 \d+px var\(--primary\)/);
+test('a model palette with bad contrast cannot make the text unreadable', () => {
+  const css = renderCss(scene({ palette: { background: '#808080', primary: '#808080', accent: '#818181' } }));
+  const ink = css.match(/--ink:\s*(#[0-9a-f]{6})/)[1];
+  assert.ok(contrastRatio(ink, '#808080') >= 4.3);
 });
 
-test('buttons are square pixel buttons: a filled primary one and an outlined secondary one', () => {
+/* ---------- css: the modern look (soft gradient, rounded glass, no retro) ---------- */
+
+test('the page has a soft gradient built from the palette, with a plain fallback', () => {
+  const css = renderCss(scene({ palette: LIGHT }));
+  assert.match(css, /html\s*\{[^}]*background:\s*var\(--bg\)/);
+  assert.match(css, /@supports \(color: color-mix\(in srgb, red 50%, blue\)\)\s*\{[^@]*body\s*\{[^}]*background:\s*linear-gradient\([^;]*color-mix\(in srgb, var\(--primary\)/);
+});
+
+test('the top bar is a rounded glass pill that floats over the page', () => {
   const css = renderCss(scene());
-  assert.match(css, /\.btn\s*\{[^}]*0 0 0 2px var\(--accent\)/);
+  assert.match(css, /\.nav\s*\{[^}]*position:\s*fixed/);
+  assert.match(css, /\.nav\s*\{[^}]*border-radius:\s*999px/);
+  assert.match(css, /\.nav\s*\{[^}]*backdrop-filter:\s*blur\(/);
+  assert.match(css, /\.nav\s*\{[^}]*background:\s*var\(--surface\)/);
+});
+
+test('cards are rounded glass panels with a soft shadow', () => {
+  const css = renderCss(scene());
+  assert.match(css, /\.card\s*\{[^}]*border-radius:\s*(1[6-9]|[2-9]\d)px/);
+  assert.match(css, /\.card\s*\{[^}]*background:\s*var\(--surface\)/);
+  assert.match(css, /\.card\s*\{[^}]*box-shadow:\s*var\(--shadow\)/);
+  assert.match(css, /--shadow:\s*0 \d+px \d+px rgba\(/);
+});
+
+test('the title sits in a rounded outlined plate', () => {
+  const css = renderCss(scene());
+  assert.match(css, /\.plate\s*\{[^}]*border:\s*[\d.]+px solid var\(--ink\)/);
+  assert.match(css, /\.plate\s*\{[^}]*border-radius:/);
+  assert.match(css, /\.plate\s*\{[^}]*color:\s*var\(--ink\)/);
+});
+
+test('buttons are rounded pills: a filled primary one and an outlined secondary one', () => {
+  const css = renderCss(scene());
+  assert.match(css, /\.btn\s*\{[^}]*border-radius:\s*999px/);
+  assert.match(css, /\.btn\s*\{[^}]*border:\s*1px solid var\(--ink\)/);
   assert.match(css, /\.btn\.primary\s*\{[^}]*background:\s*var\(--primary\)/);
-  assert.match(css, /\.btn\.primary\s*\{[^}]*color:\s*var\(--bg\)/);
-  assert.match(css, /\.btn:hover\s*\{[^}]*transform:\s*translate/);
+  assert.match(css, /\.btn\.primary\s*\{[^}]*color:\s*var\(--on-primary\)/);
+  assert.match(css, /\.btn:hover\s*\{[^}]*transform:\s*translateY\(-\d+px\)/);
 });
 
-test('each card heading has a small pixel marker', () => {
-  assert.match(renderCss(scene()), /h2::before\s*\{[^}]*background:\s*var\(--primary\)/);
+test('the current top bar link is a filled pill that stays readable', () => {
+  assert.match(renderCss(scene()), /\.nav nav a\[aria-current\]\s*\{[^}]*background:\s*var\(--primary\)[^}]*color:\s*var\(--on-primary\)/);
 });
 
-/* ---------- css: professional finish ---------- */
+test('none of the old retro styling is left', () => {
+  const css = renderCss(scene());
+  assert.ok(!/image-rendering/.test(css));
+  assert.ok(!/Courier|monospace|--mono/.test(css));
+  assert.ok(!/\d+px \d+px 0 \d+px/.test(css), 'hard pixel shadows');
+  assert.ok(!/h2::before/.test(css));
+});
 
-test('body text uses the system sans font; headings and buttons keep the monospace pixel feel', () => {
+test('headings use the system sans font in a medium weight with tight tracking', () => {
   const css = renderCss(scene());
   assert.match(css, /--sans:[^;]*system-ui/);
-  assert.match(css, /--mono:[^;]*monospace/);
   assert.match(css, /body\s*\{[^}]*font-family:\s*var\(--sans\)/);
-  assert.match(css, /h1\s*\{[^}]*font-family:\s*var\(--mono\)/);
-  assert.match(css, /h2\s*\{[^}]*font-family:\s*var\(--mono\)/);
-  assert.match(css, /\.btn\s*\{[^}]*font-family:\s*var\(--mono\)/);
+  assert.match(css, /h1\s*\{[^}]*font-weight:\s*[45]00/);
+  assert.match(css, /h1\s*\{[^}]*letter-spacing:\s*-/);
 });
+
+/* ---------- css: layout and finish ---------- */
 
 test('paragraph lines stay short enough to read', () => {
   assert.match(renderCss(scene()), /p\s*\{[^}]*max-width:\s*(\d\d)ch/);
@@ -159,41 +208,22 @@ test('keyboard focus is visible', () => {
   assert.match(renderCss(scene()), /:focus-visible\s*\{[^}]*outline:\s*\d+px solid var\(--primary\)/);
 });
 
-test('surfaces use a colour derived from the palette, with a safe fallback', () => {
-  const css = renderCss(scene());
-  assert.match(css, /--panel:\s*var\(--bg\)/);
-  assert.match(css, /@supports \(color: color-mix\(in srgb, red 50%, blue\)\)\s*\{[^}]*--panel:\s*color-mix\(in srgb, var\(--bg\)/);
-  assert.match(css, /\.card\s*\{[^}]*background:\s*var\(--panel\)/);
-  assert.match(css, /\.nav\s*\{[^}]*background:\s*var\(--panel\)/);
-});
-
-test('the top bar floats over the page and stays put while scrolling', () => {
-  assert.match(renderCss(scene()), /\.nav\s*\{[^}]*position:\s*fixed/);
-});
-
-test('the details area is opaque and sits above the 3D canvas, so cards stay readable', () => {
-  const css = renderCss(scene());
-  assert.match(css, /\.details\s*\{[^}]*background:\s*var\(--bg\)/);
-  assert.match(css, /\.details\s*\{[^}]*z-index:\s*2/);
-  assert.match(css, /\.details\s*\{[^}]*position:\s*relative/);
-});
-
 test('cards flow into a responsive grid', () => {
   assert.match(renderCss(scene()), /\.cards\s*\{[^}]*grid-template-columns:\s*repeat\(auto-fit, minmax\(/);
 });
 
-/* ---------- css: responsive ---------- */
-
-test('on phones and narrow screens the 3D scene is a band under the top bar, above the hero text', () => {
+test('the canvas is part of the hero: a band under the top bar on phones', () => {
   const css = renderCss(scene());
-  assert.match(css, /#stage\s*\{[^}]*position:\s*fixed[^}]*height:\s*\d+vh/);
+  assert.match(css, /\.hero\s*\{[^}]*position:\s*relative/);
+  assert.match(css, /#stage\s*\{[^}]*position:\s*absolute[^}]*height:\s*\d+vh/);
   assert.match(css, /\.hero\s*\{[^}]*padding-top:\s*calc\(/);
 });
 
-test('on wide screens the 3D canvas fills the right side, beside the hero text', () => {
+test('on wide screens the canvas fills the right side of the hero, beside the text', () => {
   const css = renderCss(scene());
-  assert.match(css, /@media \(min-width: \d+px\)\s*\{[^@]*#stage\s*\{[^}]*left:\s*\d+rem/);
-  assert.match(css, /@media \(min-width: \d+px\)\s*\{[^@]*#stage\s*\{[^}]*height:\s*100vh/);
+  assert.match(css, /@media \(min-width: \d+px\)\s*\{[^@]*#stage\s*\{[^}]*right:\s*0[^}]*width:\s*calc\(100% - \d+rem\)/);
+  assert.match(css, /@media \(min-width: \d+px\)\s*\{[^@]*#stage\s*\{[^}]*height:\s*100%/);
+  assert.match(css, /\.hero-copy\s*\{[^}]*z-index:\s*1/);
 });
 
 test('on phones the section links leave the top bar so it does not overflow', () => {
