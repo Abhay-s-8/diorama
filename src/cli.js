@@ -7,7 +7,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { describeImage } from './describe.js';
 import { writeSite } from './generate.js';
 import { DEFAULT_HOST, DEFAULT_MODEL, OllamaError } from './ollama.js';
-import { FALLBACK_SCENE } from './schema.js';
+import { FALLBACK_SCENE, validateScene } from './schema.js';
 
 const IMAGE_TYPES = ['.png', '.jpg', '.jpeg', '.webp', '.gif'];
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
@@ -15,6 +15,7 @@ const DEFAULT_THREE = fileURLToPath(new URL('../node_modules/three/build/three.m
 
 const USAGE = `Usage: img2scene <image> [options]
        img2scene --demo [options]
+       img2scene --scene scene.json [options]
 
 Options:
   --model NAME   Ollama vision model (default ${DEFAULT_MODEL})
@@ -22,15 +23,16 @@ Options:
   --out DIR      output folder (default out/<image name>)
   --print-json   print the scene JSON and write nothing
   --demo         build a page from the built-in scene (no image, no model)
+  --scene FILE   build a page from a scene JSON file (no image, no model)
   --three PATH   path to three.module.min.js (default: node_modules/three)
   --help         show this help`;
 
 class UsageError extends Error {}
 
 function parseArgs(argv) {
-  const opts = { model: DEFAULT_MODEL, host: DEFAULT_HOST, out: null, printJson: false, demo: false, three: DEFAULT_THREE, help: false };
+  const opts = { model: DEFAULT_MODEL, host: DEFAULT_HOST, out: null, scene: null, printJson: false, demo: false, three: DEFAULT_THREE, help: false };
   const positional = [];
-  const needValue = new Set(['--model', '--host', '--out', '--three']);
+  const needValue = new Set(['--model', '--host', '--out', '--three', '--scene']);
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (needValue.has(a)) {
@@ -45,7 +47,7 @@ function parseArgs(argv) {
   }
   if (!opts.help) {
     if (positional.length > 1) throw new UsageError('Expected one image, got several.');
-    if (!opts.demo && positional.length === 0) throw new UsageError('Missing image. Pass an image file or use --demo.');
+    if (!opts.demo && !opts.scene && positional.length === 0) throw new UsageError('Missing image. Pass an image file, or use --demo or --scene.');
   }
   return { opts, image: positional[0] };
 }
@@ -68,7 +70,20 @@ export async function main(argv, { out = process.stdout, err = process.stderr, d
   try {
     let scene;
     let name = 'demo';
-    if (opts.demo) {
+    if (opts.scene) {
+      let raw;
+      try {
+        raw = JSON.parse(fs.readFileSync(opts.scene, 'utf8'));
+      } catch (e) {
+        const why = e instanceof SyntaxError ? `it is not valid JSON (${e.message})` : 'it could not be read';
+        err.write(`img2scene: cannot use scene file ${opts.scene}: ${why}\n`);
+        return 2;
+      }
+      const checked = validateScene(raw);
+      for (const w of checked.warnings) err.write(`warning: ${w}\n`);
+      scene = checked.scene;
+      name = path.basename(opts.scene, path.extname(opts.scene));
+    } else if (opts.demo) {
       scene = JSON.parse(JSON.stringify(FALLBACK_SCENE));
     } else {
       const ext = path.extname(image).toLowerCase();
