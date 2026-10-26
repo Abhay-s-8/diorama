@@ -146,6 +146,14 @@ test('the page has a soft gradient built from the palette, with a plain fallback
   assert.match(css, /@supports \(color: color-mix\(in srgb, red 50%, blue\)\)\s*\{[^@]*body\s*\{[^}]*background:\s*linear-gradient\([^;]*color-mix\(in srgb, var\(--primary\)/);
 });
 
+test('the gradient is not overridden: the colour-mix block comes after the plain body rule', () => {
+  const css = renderCss(scene({ palette: LIGHT }));
+  const plain = css.indexOf('body { margin: 0');
+  const gradient = css.indexOf('linear-gradient(');
+  assert.ok(plain >= 0 && gradient >= 0);
+  assert.ok(gradient > plain, 'a later plain "body" rule would hide the gradient');
+});
+
 test('the top bar is a rounded glass pill that floats over the page', () => {
   const css = renderCss(scene());
   assert.match(css, /\.nav\s*\{[^}]*position:\s*fixed/);
