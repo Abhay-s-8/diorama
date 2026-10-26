@@ -12,7 +12,8 @@ function geometryFor(THREE, shape, size) {
 
 export function createStage(THREE, data, width, height) {
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(data.palette.background);
+  // No backdrop: the canvas is transparent so the page's own background shows behind the shapes.
+  scene.background = null;
 
   const FOV = 50;
   const camera = new THREE.PerspectiveCamera(FOV, width / height, 0.1, 100);
