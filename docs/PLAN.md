@@ -1,4 +1,4 @@
-# img2scene: 5-day build plan
+# Diorama: 5-day build plan
 
 **Hacktoberfest 2026, Week 4 DEV Challenge.** Everything is in IST (Asia/Calcutta).
 **Finish line: Friday 30 Oct, 6 PM. Submission is due Saturday 31 Oct, so you finish one day early.**
@@ -10,7 +10,7 @@
 
 ## 0. What you are building
 
-**img2scene** turns an image (photo, sketch, logo, poster) into a small 3D website.
+**Diorama** turns an image (photo, sketch, logo, poster) into a small 3D website.
 
 1. A **local vision model** through Ollama looks at the image and returns a scene description as JSON.
 2. Plain code **validates and repairs** that JSON (small models often get JSON wrong).
@@ -54,14 +54,14 @@ Each day is about 3 to 4 hours. Do the **Hacktoberfest swag items** too (section
 
 **Create the project**
 ```bash
-mkdir img2scene && cd img2scene
+mkdir diorama && cd diorama
 git init
 npm init -y
 npm pkg set type=module scripts.test="node --test"
 npm install three            # only dependency; MIT licensed
 mkdir -p src tests examples docs out
 ```
-Create a **public GitHub repo** named `img2scene` today and push (`git remote add origin ...`, `git push -u origin main`). A first commit dated today proves it started in the window.
+Create a **public GitHub repo** named `diorama` today and push (`git remote add origin ...`, `git push -u origin main`). A first commit dated today proves it started in the window.
 
 **Write the plan and tickets into the repo.** Copy sections 2 to 5 of this file into `docs/PLAN.md`.
 
