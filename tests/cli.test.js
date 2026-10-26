@@ -143,3 +143,42 @@ test('unexpected errors exit 1 with a message, not a stack trace', async () => {
   assert.match(r.err, /boom/);
   assert.ok(!/at .*\.js:\d+/.test(r.err));
 });
+
+test('--scene builds a page from a scene file without any model or image', async () => {
+  const f = path.join(dir, 'my-scene.json');
+  fs.writeFileSync(f, JSON.stringify({ ...FALLBACK_SCENE, title: 'From a file' }));
+  const o = path.join(tmp(), 'site');
+  const r = await run(['--scene', f, '--out', o, '--three', threeFile]);
+  assert.equal(r.code, 0);
+  assert.equal(r.calls.length, 0);
+  assert.match(fs.readFileSync(path.join(o, 'index.html'), 'utf8'), /From a file/);
+});
+
+test('--scene cleans up bad values, warns, and still succeeds', async () => {
+  const f = path.join(dir, 'messy.json');
+  fs.writeFileSync(f, JSON.stringify({ ...FALLBACK_SCENE, mood: 'spooky' }));
+  const r = await run(['--scene', f, '--print-json']);
+  assert.equal(r.code, 0);
+  assert.equal(JSON.parse(r.out).mood, 'calm');
+  assert.match(r.err, /mood/i);
+});
+
+test('--scene with a missing file exits 2 and names the path', async () => {
+  const r = await run(['--scene', '/no/such/scene.json', '--print-json']);
+  assert.equal(r.code, 2);
+  assert.match(r.err, /no\/such\/scene\.json/);
+});
+
+test('--scene with invalid JSON exits 2', async () => {
+  const f = path.join(dir, 'broken.json');
+  fs.writeFileSync(f, '{ not json');
+  const r = await run(['--scene', f, '--print-json']);
+  assert.equal(r.code, 2);
+  assert.match(r.err, /json/i);
+});
+
+test('--scene needs a value', async () => {
+  const r = await run(['--scene']);
+  assert.equal(r.code, 2);
+  assert.match(r.err, /missing value/i);
+});
