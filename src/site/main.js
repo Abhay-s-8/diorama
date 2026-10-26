@@ -4,7 +4,8 @@ import { createStage } from './runtime.js';
 const data = JSON.parse(document.getElementById('scene-data').textContent);
 const canvas = document.getElementById('stage');
 
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setClearColor(0x000000, 0);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
 const stage = createStage(THREE, data, canvas.clientWidth || 800, canvas.clientHeight || 600);
