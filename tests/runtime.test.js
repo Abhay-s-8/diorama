@@ -102,3 +102,49 @@ test('works with the fallback scene', () => {
   assert.equal(s.meshes.length, FALLBACK_SCENE.objects.length);
   s.tick(1);
 });
+
+/* ---------- camera framing: the whole scene must fit, even in a tall, narrow canvas ---------- */
+
+const wide = () => ({
+  ...data(),
+  objects: [
+    { shape: 'box', color: '#111111', position: [-3, 0, 0], size: 1, animation: 'spin' },
+    { shape: 'torus', color: '#222222', position: [3, 1, 0], size: 1, animation: 'spin' },
+  ],
+});
+
+// The group turns around the y axis, so what must fit is the largest distance from that axis.
+const reach = (objs) => Math.max(...objs.map((o) => Math.hypot(o.position[0], o.position[2]) + o.size / 2));
+const fits = (s, objs) => {
+  const r = reach(objs);
+  const halfWidthAtNearEdge = (s.camera.position.z - r) * Math.tan((s.camera.fov / 2) * Math.PI / 180) * s.camera.aspect;
+  return halfWidthAtNearEdge >= r;
+};
+
+test('every object fits across a tall, narrow canvas', () => {
+  const d = wide();
+  const s = createStage(THREE, d, 498, 787);
+  assert.ok(fits(s, d.objects), `camera z ${s.camera.position.z}`);
+});
+
+test('the camera pulls back when the canvas gets narrower, and again after a resize', () => {
+  const d = wide();
+  const s = createStage(THREE, d, 1200, 600);
+  const zWide = s.camera.position.z;
+  s.resize(400, 800);
+  assert.ok(s.camera.position.z > zWide);
+  assert.ok(fits(s, d.objects));
+  s.resize(1200, 600);
+  assert.equal(s.camera.position.z, zWide);
+});
+
+test('a small scene in a wide canvas keeps the default distance of 10', () => {
+  const d = { ...data(), objects: [{ shape: 'sphere', color: '#111111', position: [0, 0, 0], size: 1, animation: 'none' }] };
+  const s = createStage(THREE, d, 1200, 600);
+  assert.equal(s.camera.position.z, 10);
+});
+
+test('a scene with no objects does not break the camera', () => {
+  const s = createStage(THREE, { ...data(), objects: [] }, 300, 800);
+  assert.equal(s.camera.position.z, 10);
+});
