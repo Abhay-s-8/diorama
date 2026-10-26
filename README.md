@@ -68,8 +68,10 @@ image -> ollama.js (vision model, JSON schema) -> repair.js -> schema.js (valida
 - `src/schema.js` is the only gate between model output and the page: it limits shapes, clamps numbers,
   checks colours and caps text lengths.
 - `src/generate.js` writes `index.html`, `style.css`, `main.js`, `runtime.js` and a copy of three.js.
-  The page uses a retro pixel look: a window with a title bar, a mood badge and one card per section
-  beside the 3D canvas (below it on phones). The theme is plain CSS built from the scene's validated
+  The page is a small landing page in a retro pixel style: a floating top bar, a hero with the title on a
+  plate and two buttons, the 3D canvas beside it (above it on phones), then one card per section. The
+  layout is inspired by a Dribbble landing page shot (3D Modeling for UI Design, by Mako Tsereteli) but
+  none of its art, branding or text is used. The theme is plain CSS built from the scene's validated
   palette, with no fonts, images or network requests, so it keeps the strict CSP and works offline.
 
 ## Safety
